@@ -1,0 +1,129 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Сімейне меню тижня</title></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: kitchen-notebook. Sticky tab bar, week grid of day columns; recipe cards; checklist grouped by aisle. Accent = beetroot. */
+:root{
+  --bg:#f5f6f2; --surface:#ffffff; --ink:#1d2320; --muted:#5f6a64; --line:#dde2dc;
+  --accent:#9b1f4f; --accent-soft:#f6e3ea; --leaf:#2f6b4f; --leaf-soft:#e2efe7;
+  --f-display:"Unbounded","Manrope",system-ui,sans-serif;
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141816; --surface:#1c211f; --ink:#e8ece9; --muted:#9aa59f; --line:#2c3430;
+  --accent:#e2709c; --accent-soft:#3a1d2a; --leaf:#7cc4a0; --leaf-soft:#1d3127; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141816; --surface:#1c211f; --ink:#e8ece9; --muted:#9aa59f; --line:#2c3430;
+  --accent:#e2709c; --accent-soft:#3a1d2a; --leaf:#7cc4a0; --leaf-soft:#1d3127; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1180px;margin:0 auto}
+header.top{padding-block:28px 12px;display:flex;flex-wrap:wrap;gap:8px 24px;align-items:end;justify-content:space-between}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(22px,3.4vw,34px);line-height:1.15;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:6px 0 0}
+.meta{font-family:var(--f-mono);font-size:12px;color:var(--muted);text-align:right}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:6px;padding-block:10px;border-bottom:1px solid var(--line);margin-bottom:20px;overflow-x:auto}
+nav.tabs a{font-weight:700;text-decoration:none;color:var(--muted);padding:8px 14px;border-radius:999px;white-space:nowrap}
+nav.tabs a[aria-current="page"]{background:var(--ink);color:var(--bg)}
+nav.tabs a:focus-visible,a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h2{font-family:var(--f-display);font-weight:500;font-size:20px;margin:0 0 14px}
+.note{background:var(--leaf-soft);color:var(--ink);border-radius:10px;padding:10px 14px;margin:0 0 18px;font-size:14px}
+/* week grid */
+.week{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0;display:flex;flex-direction:column;gap:10px}
+.day h3{margin:0;display:flex;justify-content:space-between;align-items:baseline;font-family:var(--f-display);font-weight:500;font-size:16px}
+.day h3 span{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-weight:400}
+.slot{display:flex;flex-direction:column;gap:3px;border-top:1px dashed var(--line);padding-top:8px}
+.slot .lab{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.dish{color:var(--ink);text-decoration:none;font-weight:600;line-height:1.3}
+.dish:hover{color:var(--accent);text-decoration:underline}
+.tag{display:inline-block;font-size:11px;color:var(--muted)}
+.tag.left{color:var(--leaf);font-weight:600}
+.prep{font-size:12px;color:var(--accent);font-weight:600}
+/* recipes */
+.recipes{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.rcp{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0;scroll-margin-top:80px}
+.rcp:target{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.rcp .type{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.rcp h3{font-family:var(--f-display);font-weight:500;font-size:17px;margin:4px 0 6px;text-wrap:balance}
+.rcp .facts{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-bottom:10px}
+.rcp ul{list-style:none;margin:0 0 12px;padding:0}
+.rcp li{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid var(--line);font-size:14px}
+.rcp li .q{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
+.rcp li small{color:var(--muted)}
+.kid{background:var(--accent-soft);border-radius:8px;padding:8px 10px;font-size:13px;margin-bottom:12px}
+.kid b{color:var(--accent)}
+.src{font-weight:700;color:var(--leaf)}
+.days-used{font-size:12px;color:var(--muted);margin-bottom:8px}
+/* shopping */
+.shopbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.btn{font:inherit;font-weight:700;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 14px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.progress{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.cats{columns:340px;column-gap:16px}
+.cat{break-inside:avoid;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:16px}
+.cat h3{font-family:var(--f-display);font-weight:500;font-size:15px;margin:0 0 6px;color:var(--leaf)}
+.item{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--leaf)}
+.item .nm{font-weight:600;min-width:0}
+.item .uses{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.item .uses a{color:var(--muted)}
+.item .uses a:hover{color:var(--accent)}
+.item .q{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.item.done .nm,.item.done .q{text-decoration:line-through;opacity:.5}
+.rules{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.rules span{font-size:12px;font-weight:600;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.choice{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;min-width:0}
+.opt{position:relative;display:flex;gap:6px;align-items:flex-start;border-radius:8px;padding:4px 6px;border:1px solid transparent}
+.opt input{margin:3px 0 0;accent-color:var(--accent);flex:none}
+.opt:not(.on) .dish{color:var(--muted);font-weight:500}
+.opt.on{background:var(--accent-soft);border-color:var(--accent-soft)}
+.or{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding-left:6px}
+.dish.side{font-weight:500;color:var(--muted)}
+h3.group{font-family:var(--f-display);font-weight:500;font-size:16px;margin:22px 0 10px;color:var(--muted)}
+.rcp.alt{border-style:dashed}
+footer{margin-top:32px;color:var(--muted);font-size:12px}
+footer a{color:var(--muted)}
+.err{padding:20px;background:var(--accent-soft);border-radius:12px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:0 0 14px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;padding:10px 18px;font-size:14px}
+.btn.primary:hover{filter:brightness(1.08)}
+.sync{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.sync.bad{color:var(--accent);font-weight:600}
+.row{display:flex;align-items:flex-start;gap:4px;justify-content:space-between;min-width:0}
+.row>.dish,.row>.choice{flex:1;min-width:0}
+.re{flex:none;font:inherit;font-size:14px;line-height:1;width:26px;height:26px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;padding:0}
+.re:hover{color:var(--accent);border-color:var(--accent)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Сімейне меню тижня</h1>
+      <p class="sub" id="sub">Рецепти з klopotenko.com для 2 дорослих і дитини 2,5 роки</p>
+    </div>
+    <div class="meta" id="meta"></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <a href="#menu" data-tab="menu">Меню</a>
+    <a href="#recipes" data-tab="recipes">Рецепти</a>
+    <a href="#shop" data-tab="shop">Покупки</a>
+  </nav>
+  <main>
+    <section id="v-menu"></section>
+    <section id="v-recipes" hidden></section>
+    <section id="v-shop" hidden></section>
+  </main>
+  <footer>
+    Рецепти, кількості та фото належать <a href="https://klopotenko.com/" target="_blank" rel="noopener">klopotenko.com</a>. Тут лише інгредієнти й посилання для особистого планування; повний спосіб приготування на сайті автора. Без гострого, сіль і цукор для дитини мінімально.
+  </footer>
+</div>
+
+<script type="module" src="/app.js"></script>
+</body></html>

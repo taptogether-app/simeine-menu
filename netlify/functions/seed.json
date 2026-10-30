@@ -1,0 +1,350 @@
+{
+ "week": {
+  "start": "2026-10-26",
+  "end": "2026-11-01",
+  "label": "26 жовтня – 1 листопада 2026",
+  "updated": "2026-10-22"
+ },
+ "days": [
+  {
+   "d": "Пн",
+   "date": "26.10",
+   "meals": [
+    {
+     "slot": "Сніданок",
+     "items": [
+      {
+       "r": "frytata",
+       "x": 0.75
+      }
+     ]
+    },
+    {
+     "slot": "Обід",
+     "items": [
+      {
+       "r": "sup-kulky",
+       "x": 1,
+       "note": "варимо на 2 дні"
+      },
+      {
+       "r": "kur-kotlety",
+       "x": 1
+      },
+      {
+       "r": "pyure",
+       "x": 1
+      }
+     ]
+    },
+    {
+     "slot": "Вечеря",
+     "items": [
+      {
+       "r": "kurka-kabachok",
+       "x": 0.6,
+       "alt": [
+        {
+         "r": "kurka-kvasolia",
+         "x": 1
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "d": "Вт",
+   "date": "27.10",
+   "meals": [
+    {
+     "slot": "Сніданок",
+     "items": [
+      {
+       "r": "omlet-shpynat",
+       "x": 1.25
+      }
+     ]
+    },
+    {
+     "slot": "Обід",
+     "items": [
+      {
+       "r": "sup-kulky",
+       "x": 0,
+       "note": "з понеділка"
+      },
+      {
+       "r": "bulgur",
+       "x": 1
+      }
+     ]
+    },
+    {
+     "slot": "Вечеря",
+     "items": [
+      {
+       "r": "mintai",
+       "x": 1.25,
+       "alt": [
+        {
+         "r": "hek-tush",
+         "x": 0.5
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "d": "Ср",
+   "date": "28.10",
+   "meals": [
+    {
+     "slot": "Сніданок",
+     "items": [
+      {
+       "r": "syrnyky",
+       "x": 1.5,
+       "note": "12 сирників",
+       "alt": [
+        {
+         "r": "frytata",
+         "x": 0.75
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "slot": "Обід",
+     "items": [
+      {
+       "r": "krem-sup",
+       "x": 2,
+       "note": "варимо на 2 дні"
+      },
+      {
+       "r": "ryb-kotlety",
+       "x": 1
+      },
+      {
+       "r": "grechka",
+       "x": 1
+      }
+     ]
+    },
+    {
+     "slot": "Вечеря",
+     "items": [
+      {
+       "r": "kurka-kvasolia",
+       "x": 1,
+       "alt": [
+        {
+         "r": "kurka-kabachok",
+         "x": 0.6
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "d": "Чт",
+   "date": "29.10",
+   "meals": [
+    {
+     "slot": "Сніданок",
+     "items": [
+      {
+       "r": "yaytsya-petrushka",
+       "x": 1.5
+      }
+     ]
+    },
+    {
+     "slot": "Обід",
+     "items": [
+      {
+       "r": "krem-sup",
+       "x": 0,
+       "note": "з середи"
+      },
+      {
+       "r": "kur-kotlety",
+       "x": 1
+      },
+      {
+       "r": "pyure",
+       "x": 1
+      }
+     ]
+    },
+    {
+     "slot": "Вечеря",
+     "items": [
+      {
+       "r": "hek-tush",
+       "x": 0.5,
+       "alt": [
+        {
+         "r": "mintai",
+         "x": 1.25
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "d": "Пт",
+   "date": "30.10",
+   "meals": [
+    {
+     "slot": "Сніданок",
+     "items": [
+      {
+       "r": "omlet-duhovka",
+       "x": 1.25
+      }
+     ]
+    },
+    {
+     "slot": "Обід",
+     "items": [
+      {
+       "r": "kapusnyak",
+       "x": 1,
+       "note": "варимо на 2 дні"
+      },
+      {
+       "r": "garbuz-kotlety",
+       "x": 1
+      },
+      {
+       "r": "grechka",
+       "x": 1
+      }
+     ]
+    },
+    {
+     "slot": "Вечеря",
+     "items": [
+      {
+       "r": "kurka-kabachok",
+       "x": 0.6,
+       "alt": [
+        {
+         "r": "kurka-kvasolia",
+         "x": 1
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "d": "Сб",
+   "date": "31.10",
+   "meals": [
+    {
+     "slot": "Сніданок",
+     "items": [
+      {
+       "r": "omlet-baklazhan",
+       "x": 1.5
+      }
+     ]
+    },
+    {
+     "slot": "Обід",
+     "items": [
+      {
+       "r": "kapusnyak",
+       "x": 0,
+       "note": "з п'ятниці"
+      },
+      {
+       "r": "ryb-kotlety",
+       "x": 1
+      },
+      {
+       "r": "rys",
+       "x": 1
+      }
+     ]
+    },
+    {
+     "slot": "Вечеря",
+     "items": [
+      {
+       "r": "skumbria",
+       "x": 1,
+       "alt": [
+        {
+         "r": "mintai",
+         "x": 1.25
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "d": "Нд",
+   "date": "01.11",
+   "meals": [
+    {
+     "slot": "Сніданок",
+     "items": [
+      {
+       "r": "omlet-klas",
+       "x": 2.5,
+       "alt": [
+        {
+         "r": "omlet-duhovka",
+         "x": 1.25
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "slot": "Обід",
+     "items": [
+      {
+       "r": "sup-kabachky",
+       "x": 1
+      },
+      {
+       "r": "bulgur",
+       "x": 1
+      }
+     ]
+    },
+    {
+     "slot": "Вечеря",
+     "items": [
+      {
+       "r": "kurka-kvasolia",
+       "x": 1,
+       "alt": [
+        {
+         "r": "kurka-kabachok",
+         "x": 0.6
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
