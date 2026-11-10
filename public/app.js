@@ -65,7 +65,7 @@ const btnRe = (k, label) => `<button class="re" type="button" data-re="${k}" tit
 function renderMenu() {
   let h = '<h2>Меню на тиждень</h2><div class="rules">' + (LIB.rules || []).map(r => `<span>${esc(r)}</span>`).join('') + '</div>' +
     `<div class="toolbar"><button class="btn primary" id="gen" type="button">Скласти нове меню (тиждень з ${nextMondayLabel()})</button><span class="sync" id="sync" role="status"></span></div>` +
-    '<p class="note">Супи варимо одразу на 2 дні. Де є «або», оберіть варіант: список покупок перерахується автоматично. ↻ замінює одну страву. Усі зміни бачать обоє.</p><div class="week">';
+    '<p class="note">Супи варимо на 2 дні. Страви з попередніх 4 тижнів виключаються, доки вистачає рецептів. ↻ замінює страву. Список покупок оновлюється автоматично.</p><div class="week">';
   S.days.forEach((day, di) => {
     h += `<article class="day"><h3>${day.d}<span>${day.date}</span></h3>`;
     day.meals.forEach((m, mi) => {

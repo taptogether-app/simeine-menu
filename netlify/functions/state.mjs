@@ -10,7 +10,9 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), {
 
 async function load(store) {
   const s = await store.get(KEY, { type: 'json' });
-  return s || { week: seed.week, days: seed.days, choices: {}, done: {}, rev: 0 };
+  if (s?.schema === 2) return s;
+  const start = targetMonday();
+  return { schema: 2, week: weekInfo(start), days: generateWeek(lib, start, []), history: [], choices: {}, done: {}, rev: 0 };
 }
 
 export default async (req) => {
@@ -37,8 +39,8 @@ export default async (req) => {
       break;
     case 'generate': {
       const start = /^\d{4}-\d{2}-\d{2}$/.test(b.start || '') ? b.start : targetMonday();
-      s.prevDays = s.days;
-      s.days = generateWeek(lib, start, s.days);
+      s.history = [...(s.history || []), { week: s.week?.start, days: s.days }].slice(-4);
+      s.days = generateWeek(lib, start, s.history);
       s.week = weekInfo(start, today);
       s.choices = {};
       s.done = {};
@@ -47,7 +49,7 @@ export default async (req) => {
     case 'replace': {
       const { di, mi, ii } = b;
       if (![di, mi, ii].every(Number.isInteger) || !s.days[di] || !s.days[di].meals[mi] || !s.days[di].meals[mi].items[ii]) return json({ error: 'index' }, 400);
-      s.days = replaceItem(lib, s.days, di, mi, ii);
+      s.days = replaceItem(lib, s.days, di, mi, ii, Math.random, s.history || []);
       Object.keys(s.choices).forEach(k => { if (k.startsWith(`${di}-${mi}-`)) delete s.choices[k]; });
       s.week.updated = today;
       break;
@@ -57,7 +59,7 @@ export default async (req) => {
   }
   if (validate(lib, s.days).length) return json({ error: 'invalid menu' }, 500);
   s.rev = (s.rev || 0) + 1;
-  delete s.prevDays;
+
   await store.setJSON(KEY, s);
   return json(s);
 };

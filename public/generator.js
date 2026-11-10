@@ -25,152 +25,65 @@ export function weekInfo(start, updated) {
 
 const xFor = (r, portions) => Math.max(0.25, Math.ceil((portions / (r.yield || r.servings || 1)) * 4 - 0.05) / 4);
 
-function picker(rng, usage) {
-  // Випадковий вибір з перевагою для страв, яких давно не було.
-  return (list, avoid = []) => {
-    let c = list.filter(r => !avoid.includes(r.id));
-    if (!c.length) c = list;
-    const w = c.map(r => 1 / (1 + (usage[r.id] || 0) * 3));
-    let t = rng() * w.reduce((a, b) => a + b, 0);
-    for (let i = 0; i < c.length; i++) { t -= w[i]; if (t <= 0) return c[i]; }
-    return c[c.length - 1];
-  };
-}
-
 function pools(recipes) {
-  const by = k => recipes.filter(r => r.kind === k);
-  return { egg: by('egg'), other: by('other'), soup: by('soup'), main: [...by('main'), ...by('complex')], side: by('side'), dinner: by('dinner') };
+  const minutes = r => { const t = r.time || ''; const h = t.match(/(\d+)\s*год/); const m = t.match(/(\d+)\s*хв/); return (h ? +h[1]*60 : 0) + (m ? +m[1] : 0); };
+  const by = k => recipes.filter(r => r.kind === k && minutes(r) <= 60 && (k === 'side' || /^https:\/\/klopotenko\.com\//.test(r.url || '')));
+  return { egg: by('egg'), soup: by('soup'), main: [...by('main'), ...by('complex')], side: by('side'), dinner: [...by('dinner'), ...by('main').filter(r => r.id !== 'garbuz-kotlety'), ...by('complex')] };
 }
-
-function countUsage(days) {
-  const u = {};
-  (days || []).forEach(d => d.meals.forEach(m => m.items.forEach(it => {
-    [it, ...(it.alt || [])].forEach(p => { u[p.r] = (u[p.r] || 0) + 1; });
-  })));
-  return u;
+function historyIds(history) {
+  const ids = new Set();
+  for (const week of history || []) for (const day of week.days || []) for (const meal of day.meals || []) for (const item of meal.items || []) ids.add(item.r);
+  return ids;
 }
-
-function lunchMain(r, P, pick, prevSide) {
-  const items = [{ r: r.id, x: xFor(r, PORTIONS) }];
-  if (r.kind === 'main' && P.side.length) {
-    const s = pick(P.side, prevSide ? [prevSide] : []);
-    items.push({ r: s.id, x: xFor(s, PORTIONS) });
-  }
-  return items;
+function pickOne(pool, used, history, rng, exclusions = []) {
+  if (!pool.length) throw new Error('Недостатньо рецептів для генерації меню');
+  const forbidden = new Set(exclusions);
+  const eligible = pool.filter(r => !used.has(r.id) && !history.has(r.id) && !forbidden.has(r.id));
+  const fresh = pool.filter(r => !used.has(r.id) && !forbidden.has(r.id));
+  const unique = pool.filter(r => !used.has(r.id));
+  const candidates = eligible.length ? eligible : fresh.length ? fresh : unique.length ? unique : pool;
+  const r = candidates[Math.floor(rng() * candidates.length)];
+  used.add(r.id);
+  return r;
 }
-
-const SOUP_PLAN = [[0, 1], [2, 3], [4, 5], [6]];
-
-export function generateWeek(lib, start, prevDays = [], rng = Math.random) {
+const SOUP_PLAN = [[0,1],[2,3],[4,5],[6]];
+export function generateWeek(lib, start, history = [], rng = Math.random) {
   const P = pools(lib.recipes);
-  const usage = countUsage(prevDays);
-  const pick = picker(rng, usage);
-  const wk = {};
-  const use = r => { usage[r.id] = (usage[r.id] || 0) + 1; wk[r.id] = (wk[r.id] || 0) + 1; return r; };
-  const maxed = (n = 2) => Object.keys(wk).filter(id => wk[id] >= n);
-  const s = parse(start);
-  const days = DAYS.map((d, i) => {
-    const dt = addDays(s, i);
-    return { d, date: `${String(dt.getUTCDate()).padStart(2, '0')}.${String(dt.getUTCMonth() + 1).padStart(2, '0')}`, meals: [] };
-  });
-
-  // Сніданки: з яєць, максимум один інший (напр. сирники).
-  const otherDay = P.other.length && rng() < 0.6 ? Math.floor(rng() * 7) : -1;
-  let prevB = null;
-  const breakfasts = days.map((_, i) => {
-    const r = use(i === otherDay ? pick(P.other) : pick(P.egg.length ? P.egg : P.other, [...(prevB ? [prevB] : []), ...maxed()]));
-    prevB = r.id;
-    return r;
-  });
-
-  // Супи: варимо на 2 дні.
-  const soupFor = [];
-  const usedSoups = [];
-  SOUP_PLAN.forEach(group => {
-    const r = use(pick(P.soup, usedSoups));
-    usedSoups.push(r.id);
-    group.forEach((di, j) => { soupFor[di] = { r, cook: j === 0, from: group[0], portions: group.length * PORTIONS }; });
-  });
-
-  let prevMain = null, prevSide = null, prevDinner = null;
-  days.forEach((day, i) => {
-    const b = breakfasts[i];
-    day.meals.push({ slot: 'Сніданок', items: [{ r: b.id, x: xFor(b, PORTIONS) }] });
-
-    const sp = soupFor[i];
-    const soupItem = sp.cook
-      ? { r: sp.r.id, x: xFor(sp.r, sp.portions), ...(sp.portions > PORTIONS ? { note: 'варимо на 2 дні' } : {}) }
-      : { r: sp.r.id, x: 0, note: 'з ' + DAYS_FULL[sp.from] };
-    const m = use(pick(P.main, [...(prevMain ? [prevMain] : []), ...maxed()]));
-    prevMain = m.id;
-    const mainItems = lunchMain(m, P, pick, prevSide);
-    prevSide = mainItems[1] ? mainItems[1].r : null;
-    day.meals.push({ slot: 'Обід', items: [soupItem, ...mainItems] });
-
-    const dn = use(pick(P.dinner, [...(prevDinner ? [prevDinner] : []), ...maxed()]));
-    prevDinner = dn.id;
-    const alt = pick(P.dinner, [dn.id]);
-    const it = { r: dn.id, x: xFor(dn, PORTIONS) };
-    if (alt.id !== dn.id) it.alt = [{ r: alt.id, x: xFor(alt, PORTIONS) }];
-    day.meals.push({ slot: 'Вечеря', items: [it] });
-  });
+  const previous = historyIds(history);
+  const used = new Set();
+  const days = DAYS.map((d,i) => { const dt=addDays(parse(start),i); return {d,date:`${String(dt.getUTCDate()).padStart(2,'0')}.${String(dt.getUTCMonth()+1).padStart(2,'0')}`,meals:[]}; });
+  const soups = [];
+  for (const group of SOUP_PLAN) {
+    const r = pickOne(P.soup,used,previous,rng);
+    group.forEach((i,j)=>soups[i]={r, first:j===0, firstDay:group[0], portions:PORTIONS*group.length});
+  }
+  for (let i=0;i<7;i++) {
+    const breakfast=pickOne(P.egg,used,previous,rng);
+    days[i].meals.push({slot:'Сніданок',items:[{r:breakfast.id,x:xFor(breakfast,PORTIONS)}]});
+    const sp=soups[i];
+    const soupItem={r:sp.r.id,x:sp.first?xFor(sp.r,sp.portions):0,...(sp.first && sp.portions>PORTIONS?{note:'варимо на 2 дні'}:{}),...(!sp.first?{note:'з '+DAYS_FULL[sp.firstDay]}:{})};
+    const main=pickOne(P.main,used,previous,rng);
+    const lunch=[soupItem,{r:main.id,x:xFor(main,PORTIONS)}];
+    if(main.kind==='main') {const side=pickOne(P.side,used,previous,rng);lunch.push({r:side.id,x:xFor(side,PORTIONS)});}
+    days[i].meals.push({slot:'Обід',items:lunch});
+    const dinner=pickOne(P.dinner,used,previous,rng,[main.id]);
+    const dinnerItems=[{r:dinner.id,x:xFor(dinner,PORTIONS)}];
+    if(dinner.kind!=='complex') {const side=pickOne(P.side,used,previous,rng);dinnerItems.push({r:side.id,x:xFor(side,PORTIONS)});}
+    days[i].meals.push({slot:'Вечеря',items:dinnerItems});
+  }
   return days;
 }
-
-// Замінити одну страву. Повертає нові days (копію).
-export function replaceItem(lib, days, di, mi, ii, rng = Math.random) {
-  const D = JSON.parse(JSON.stringify(days));
-  const R = Object.fromEntries(lib.recipes.map(r => [r.id, r]));
-  const P = pools(lib.recipes);
-  const pick = picker(rng, countUsage(D));
-  const meal = D[di].meals[mi];
-  const it = meal.items[ii];
-  const cur = R[it.r];
-  if (!cur) return D;
-  const kind = cur.kind;
-
-  if (kind === 'soup') {
-    const used = D.map(d => d.meals.find(m => m.slot === 'Обід')).filter(Boolean).map(m => m.items[0].r);
-    const nr = pick(P.soup, used);
-    D.forEach(d => d.meals.forEach(m => m.items.forEach(x => {
-      if (x.r === cur.id && m.slot === 'Обід' && sameSoupGroup(D, di, d)) {
-        x.r = nr.id;
-        if (x.x > 0) x.x = xFor(nr, (x.note ? 2 : 1) * PORTIONS);
-      }
-    })));
-    return D;
-  }
-  if (kind === 'side') {
-    const ns = pick(P.side, [cur.id]);
-    meal.items[ii] = { r: ns.id, x: xFor(ns, PORTIONS) };
-    return D;
-  }
-  if (kind === 'main' || kind === 'complex') {
-    const nr = pick(P.main, [cur.id]);
-    const hasSide = meal.items[ii + 1] && R[meal.items[ii + 1].r] && R[meal.items[ii + 1].r].kind === 'side';
-    const prevSide = hasSide ? meal.items[ii + 1].r : null;
-    meal.items.splice(ii, hasSide ? 2 : 1, ...lunchMain(nr, P, pick, prevSide));
-    return D;
-  }
-  if (kind === 'dinner') {
-    const opts = [it.r, ...(it.alt || []).map(a => a.r)];
-    const n1 = pick(P.dinner, opts);
-    const n2 = pick(P.dinner, [...opts, n1.id]);
-    const ni = { r: n1.id, x: xFor(n1, PORTIONS) };
-    if (n2.id !== n1.id) ni.alt = [{ r: n2.id, x: xFor(n2, PORTIONS) }];
-    meal.items[ii] = ni;
-    return D;
-  }
-  // сніданок
-  const nr = pick(P.egg, [cur.id]);
-  meal.items[ii] = { r: nr.id, x: xFor(nr, PORTIONS) };
+export function replaceItem(lib, days, di, mi, ii, rng=Math.random, history=[]) {
+  const D=JSON.parse(JSON.stringify(days));
+  const P=pools(lib.recipes), R=Object.fromEntries(lib.recipes.map(r=>[r.id,r]));
+  const meal=D[di]?.meals[mi], it=meal?.items[ii]; if(!it||!R[it.r])return D;
+  const old=R[it.r], prior=historyIds(history), used=new Set(D.flatMap(d=>d.meals.flatMap(m=>m.items.map(x=>x.r))));
+  const pool=old.kind==='soup'?P.soup:old.kind==='egg'?P.egg:old.kind==='side'?P.side:mi===2?P.dinner:P.main;
+  const nr=pickOne(pool,used,prior,rng,[old.id]);
+  if(old.kind==='soup') { const group=SOUP_PLAN.find(g=>g.includes(di))||[di];for(const i of group){const x=D[i].meals[1].items[0];x.r=nr.id;if(x.x>0)x.x=xFor(nr,group.length*PORTIONS);} }
+  else if(old.kind==='side') meal.items[ii]={r:nr.id,x:xFor(nr,PORTIONS)};
+  else {const rest=meal.items.slice(ii+1);const hasSide=rest.length && R[rest[0].r]?.kind==='side';const repl=[{r:nr.id,x:xFor(nr,PORTIONS)}];if(nr.kind==='main'||(mi===2&&nr.kind==='dinner')){const side=pickOne(P.side,used,prior,rng);repl.push({r:side.id,x:xFor(side,PORTIONS)});}meal.items.splice(ii,hasSide?2:1,...repl);}
   return D;
-}
-
-function sameSoupGroup(D, di, d) {
-  const j = D.indexOf(d);
-  const g = SOUP_PLAN.find(g => g.includes(di));
-  return g ? g.includes(j) : j === di;
 }
 
 export function validate(lib, days) {
